@@ -4,14 +4,18 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Movem.Api</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Movem.Common\Movem.Common.csproj" />
+    <ProjectReference Include="..\Movem.Db\Movem.Db.csproj" />
     <ProjectReference Include="..\Movem.FileStorage\Movem.FileStorage.csproj" />
   </ItemGroup>
 

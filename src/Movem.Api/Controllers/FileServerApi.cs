@@ -1,19 +1,17 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Movem.Api.DTOs;
+using Movem.Common.Interfaces;
 using Movem.FileStorage;
 
-namespace Movem.Web.Controllers;
+namespace Movem.Api.Controllers;
 
 [ApiController]
 [Route("api/data")]
-public class ProductsController : ControllerBase
+public class AppController(
+    ILogger<AppController> log,
+    IStorageFactoryService<DataDto> storageService, IMapper mapper) : ControllerBase
 {
-    private readonly IFileStorage _fileStorage;
-
-    public ProductsController(IFileStorage fileStorage)
-    {
-        _fileStorage = fileStorage;
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -34,9 +32,10 @@ public class ProductsController : ControllerBase
 
     [HttpPut]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Put([FromForm] IFormFile file)
+    public async Task<IActionResult> Put([FromForm] FileUploadDto file)
     {
-        var res = await _fileStorage.StoreFileAsync(file);
+        var dto = mapper.Map<DataDto>(file);
+        var res = await storageService.InsertAsync(dto);
 
         if (res)
         {
