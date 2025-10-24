@@ -4,7 +4,7 @@ A simple file server for the masses
 
 ## Usage
 
-To use this application you first need to either have your own postgres instance or use docker-compose to create an empty database
+To use this application you first need to either have your own postgres instance (but then you will have to mess around with connection strings) or use docker-compose to create an empty database
 
 To create an empty database using docker first you need to configure the env file:
 
