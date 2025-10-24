@@ -23,6 +23,14 @@ public class RedisStorage(ILogger<RedisStorage> log, IDistributedCache cache) : 
 
     public async Task InsertAsync(DataModel model)
     {
+        if (model.Id is not null)
+        {
+            var exists = await GetAsync(model.Id.Value);
+            if (exists is not null)
+            {
+                return;
+            }
+        }
         var expiration = TimeSpan.FromMinutes(10);
         var serialized = JsonSerializer.Serialize(model, _jsonOptions);
         var options = new DistributedCacheEntryOptions
@@ -35,6 +43,21 @@ public class RedisStorage(ILogger<RedisStorage> log, IDistributedCache cache) : 
 
     public async Task UpdateAsync(DataModel model)
     {
-        await InsertAsync(model);
+        if (model.Id is not null)
+        {
+            var exists = await GetAsync(model.Id.Value);
+            if (exists is not null)
+            {
+                await cache.RemoveAsync(exists.Id.ToString()!);
+            }
+        }
+        var expiration = TimeSpan.FromMinutes(10);
+        var serialized = JsonSerializer.Serialize(model, _jsonOptions);
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expiration
+        };
+
+        await cache.SetStringAsync(model.Id.ToString()!, serialized, options);
     }
 }
