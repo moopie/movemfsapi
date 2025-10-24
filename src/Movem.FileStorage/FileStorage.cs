@@ -1,21 +1,84 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Movem.Common.Interfaces;
+using Movem.Common.Models;
 
 namespace Movem.FileStorage;
 
-public class FileStorage(IOptions<FileStorageOptions> options) : IFileStorage
+public class FileStorage(ILogger<FileStorage> log) : IStorage
 {
-    private readonly FileStorageOptions _options = options.Value;
-
-    public async Task<bool> StoreFileAsync(IFormFile file)
+    // TODO: Move to configuration file
+    //private readonly string _rootPath = $"{Path.Combine(Path.GetTempPath(), "storage")}";
+    private readonly string _rootPath = $"{Path.Combine(AppContext.BaseDirectory, "storage")}";
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
-        if (file.Length > _options.MaxFileSize)
-            return false;
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
 
-        var path = Path.Combine(_options.RootPath, file.FileName);
-        await using var stream = new FileStream(path, FileMode.Create);
-        await file.CopyToAsync(stream);
+    public async Task<DataModel?> GetAsync(int id)
+    {
+        var file = Directory.GetFiles(_rootPath, $"{id}_*.json").SingleOrDefault();
+        if (file is null) return null;
+        
+        var ts = long.Parse(Path.GetFileNameWithoutExtension(file).Split('_')[1]);
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (now > ts)
+        {
+            log.LogInformation($"Removing file {file} because it expires at {ts} and now it's {now}.");
+            File.Delete(file);
+            return null;
+        }
+        
+        try
+        {
+            await using var stream = File.OpenRead(file);
+            return await JsonSerializer.DeserializeAsync<DataModel>(stream, _jsonSerializerOptions);
+        }
+        catch (Exception e)
+        {
+            log.LogError(e.Message);
+            return null;
+        }
+    }
 
-        return true;
+    public async Task InsertAsync(DataModel file)
+    {
+        if (!Directory.Exists(_rootPath))
+        {
+            Directory.CreateDirectory(_rootPath);
+        }
+        
+        if (!file.Id.HasValue) return;
+        
+        var exists = await GetAsync(file.Id.Value);
+        if (exists is not null) return;
+        
+        var ts = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeMilliseconds();
+        var name = $"{file.Id}_{ts}.json";
+        var path = Path.Combine(_rootPath, name);
+        try
+        {
+            await using var stream = File.Create(path);
+            await JsonSerializer.SerializeAsync(stream, file, _jsonSerializerOptions);
+        }
+        catch (Exception e)
+        {
+            log.LogError(e, e.Message);
+            throw;
+        }
+    }
+
+    public async Task UpdateAsync(DataModel model)
+    {
+        var file = Directory.GetFiles(_rootPath, $"{model.Id}_*.json").SingleOrDefault();
+        if (file is not null)
+        {
+            File.Delete(file);
+        }
+        
+        await InsertAsync(model);
+        
     }
 }

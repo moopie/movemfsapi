@@ -10,10 +10,16 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Movem.CacheStorage\Movem.CacheStorage.csproj" />
     <ProjectReference Include="..\Movem.Common\Movem.Common.csproj" />
     <ProjectReference Include="..\Movem.Db\Movem.Db.csproj" />
     <ProjectReference Include="..\Movem.FileStorage\Movem.FileStorage.csproj" />

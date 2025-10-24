@@ -6,13 +6,13 @@ namespace Movem.Db.Contexts;
 public sealed class FileStorageContext(
     DbContextOptions<FileStorageContext> options) : DbContext(options)
 {
-    public DbSet<FileData> Files { get; set; }
+    public DbSet<DataEntity> Files { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
-        modelBuilder.Entity<FileData>()
+        modelBuilder.Entity<DataEntity>()
             .Property(p => p.Id)
             .ValueGeneratedOnAdd();
     }

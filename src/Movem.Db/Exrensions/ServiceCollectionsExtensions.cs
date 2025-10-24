@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Movem.Db.Base;
 using Movem.Db.Contexts;
 using Movem.Db.Interfaces;
 using Movem.Db.Models;
@@ -16,7 +17,8 @@ public static class ServiceCollectionsExtensions
         // but I'm not sure if the service will be run with the environment variables in mind
         collection.AddDbContext<DbContext, FileStorageContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-        collection.AddScoped<IRepository<FileData>, FileRepository>();
+        collection.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        collection.AddScoped<IFileRepository, FileRepository>();
         return collection;
     }
 }

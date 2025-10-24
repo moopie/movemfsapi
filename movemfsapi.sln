@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Movem.FileStorage", "src\Mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Movem.Db", "src\Movem.Db\Movem.Db.csproj", "{033212E7-B116-4A4A-B2B6-900D0BAB3519}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Movem.CacheService", "src\Movem.CacheService\Movem.CacheService.csproj", "{73E660E8-E0C5-4A92-8501-B301C457FE52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Movem.CacheStorage", "src\Movem.CacheStorage\Movem.CacheStorage.csproj", "{73E660E8-E0C5-4A92-8501-B301C457FE52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

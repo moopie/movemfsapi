@@ -1,42 +1,32 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Movem.Common.Interfaces;
+using Movem.Common.Models;
+using Movem.Db.Base;
 using Movem.Db.Contexts;
 using Movem.Db.Interfaces;
 using Movem.Db.Models;
 
 namespace Movem.Db.Repositories;
 
-public class FileRepository(FileStorageContext context) : IRepository<FileData>
+public class FileRepository(FileStorageContext context, IMapper mapper) : Repository<DataEntity>(context), IFileRepository, IStorage
 {
-    public async Task<IEnumerable<FileData>> GetAllAsync()
+    public async Task<DataModel?> GetAsync(int id)
     {
-        return await context.Files.ToArrayAsync();
+        var entity = await base.GetAsync(id);
+        var model = mapper.Map<DataModel>(entity);
+        return model;
     }
 
-    public async Task<FileData?> GetByIdAsync(int id)
+    public async Task InsertAsync(DataModel model)
     {
-        return await context.Files.FirstOrDefaultAsync(f => f.Id == id);
+        var entity = mapper.Map<DataEntity>(model);
+        await base.AddAsync(entity);
     }
 
-    public async Task<int> AddAsync(FileData entity)
+    public Task UpdateAsync(DataModel model)
     {
-        context.Files.Add(entity);
-        return await context.SaveChangesAsync();
-    }
-
-    public async Task<int> Update(FileData entity)
-    {
-        context.Files.Update(entity);
-        return await context.SaveChangesAsync();
-    }
-
-    public async Task<int> Delete(FileData entity)
-    {
-        context.Files.Remove(entity);
-        return await context.SaveChangesAsync();
-    }
-
-    public async Task<int> SaveChangesAsync()
-    {
-        return await context.SaveChangesAsync();
+        var entity = mapper.Map<DataEntity>(model);
+        return base.UpdateAsync(entity);
     }
 }

@@ -10,4 +10,10 @@
       <Folder Include="Core\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore.Http.Features">
+        <HintPath>..\..\..\..\..\..\opt\homebrew\Cellar\dotnet\9.0.8\libexec\shared\Microsoft.AspNetCore.App\9.0.8\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

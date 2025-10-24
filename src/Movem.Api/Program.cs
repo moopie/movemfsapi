@@ -1,9 +1,10 @@
 using AutoMapper;
-using Movem.Api.DTOs;
+using Movem.Api.Factories;
 using Movem.Api.MappingProfiles;
+using Movem.CacheService;
 using Movem.Common.Interfaces;
-using Movem.Api.Services;
 using Movem.Db.Exrensions;
+using Movem.FileStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +15,20 @@ var loggerFactory = LoggerFactory.Create(logging =>
     logging.AddDebug();
 });
 
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddLogging();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddDistributedRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
 builder.Services.AddMovemDb(builder.Configuration);
 
 var mapperConfig = new MapperConfiguration((cfg) =>
@@ -31,7 +41,13 @@ mapperConfig.AssertConfigurationIsValid();
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
-builder.Services.AddScoped<IStorageFactoryService<DataDto>, StorageFactoryService>();
+builder.Services.AddScoped<IStorage, FileStorage>();
+builder.Services.AddScoped<IStorage, InMemoryStorage>();
+builder.Services.AddScoped<IStorage, RedisStorage>();
+builder.Services.AddScoped<FileStorage>();
+builder.Services.AddScoped<InMemoryStorage>();
+builder.Services.AddScoped<RedisStorage>();
+builder.Services.AddSingleton<IStorageFactory, StorageFactory>();
 
 var app = builder.Build();
 
