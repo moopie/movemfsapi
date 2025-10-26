@@ -1,9 +1,11 @@
 using AutoMapper;
 using Movem.Api.Factories;
+using Movem.Api.Managers;
 using Movem.Api.MappingProfiles;
 using Movem.CacheService;
 using Movem.Common.Interfaces;
 using Movem.Db.Exrensions;
+using Movem.Db.Repositories;
 using Movem.FileStorage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,13 +43,18 @@ mapperConfig.AssertConfigurationIsValid();
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
-builder.Services.AddScoped<IStorage, FileStorage>();
-builder.Services.AddScoped<IStorage, InMemoryStorage>();
-builder.Services.AddScoped<IStorage, RedisStorage>();
+//builder.Services.AddScoped<IStorage, FileStorage>();
+//builder.Services.AddScoped<IStorage, InMemoryStorage>();
+//builder.Services.AddScoped<IStorage, RedisStorage>();
+builder.Services.AddKeyedScoped<IStorage, FileRepository>("primary");
+builder.Services.AddKeyedScoped<IStorage, InMemoryStorage>("secondary");
+builder.Services.AddKeyedScoped<IStorage, FileStorage>("secondary");
+builder.Services.AddKeyedScoped<IStorage, RedisStorage>("secondary");
 builder.Services.AddScoped<FileStorage>();
 builder.Services.AddScoped<InMemoryStorage>();
 builder.Services.AddScoped<RedisStorage>();
 builder.Services.AddSingleton<IStorageFactory, StorageFactory>();
+builder.Services.AddScoped<IStorageManager, StorageManager>();
 
 var app = builder.Build();
 

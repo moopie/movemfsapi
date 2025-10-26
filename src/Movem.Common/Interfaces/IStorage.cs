@@ -4,7 +4,8 @@ namespace Movem.Common.Interfaces;
 
 public interface IStorage
 {
-    Task<DataModel?> GetAsync(int id);
-    Task InsertAsync(DataModel model);
+    public int Priority { get; }
+    Task<DataModel?> GetModelAsync(int id);
+    Task<int?> InsertAsync(DataModel model);
     Task UpdateAsync(DataModel model);
 }

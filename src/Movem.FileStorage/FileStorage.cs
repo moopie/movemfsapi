@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Movem.Common.Enums;
 using Movem.Common.Interfaces;
 using Movem.Common.Models;
 
@@ -8,6 +8,9 @@ namespace Movem.FileStorage;
 
 public class FileStorage(ILogger<FileStorage> log) : IStorage
 {
+    public int Priority => 100;
+    public StorageType StorageType => StorageType.FileSystem;
+
     // TODO: Move to configuration file
     //private readonly string _rootPath = $"{Path.Combine(Path.GetTempPath(), "storage")}";
     private readonly string _rootPath = $"{Path.Combine(AppContext.BaseDirectory, "storage")}";
@@ -17,7 +20,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         WriteIndented = true
     };
 
-    public async Task<DataModel?> GetAsync(int id)
+    public async Task<DataModel?> GetModelAsync(int id)
     {
         var file = Directory.GetFiles(_rootPath, $"{id}_*.json").SingleOrDefault();
         if (file is null) return null;
@@ -43,17 +46,17 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         }
     }
 
-    public async Task InsertAsync(DataModel file)
+    public async Task<int?> InsertAsync(DataModel file)
     {
         if (!Directory.Exists(_rootPath))
         {
             Directory.CreateDirectory(_rootPath);
         }
         
-        if (!file.Id.HasValue) return;
+        if (!file.Id.HasValue) return null;
         
-        var exists = await GetAsync(file.Id.Value);
-        if (exists is not null) return;
+        var exists = await GetModelAsync(file.Id.Value);
+        if (exists is not null) return null;
         
         var ts = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeMilliseconds();
         var name = $"{file.Id}_{ts}.json";
@@ -62,6 +65,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         {
             await using var stream = File.Create(path);
             await JsonSerializer.SerializeAsync(stream, file, _jsonSerializerOptions);
+            return file.Id.Value;
         }
         catch (Exception e)
         {

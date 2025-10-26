@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Movem.Db.Base;
 using Movem.Db.Contexts;
 using Movem.Db.Interfaces;
-using Movem.Db.Models;
 using Movem.Db.Repositories;
 
 namespace Movem.Db.Exrensions;

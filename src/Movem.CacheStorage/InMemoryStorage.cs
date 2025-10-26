@@ -1,4 +1,4 @@
-using System.Reflection.Metadata.Ecma335;
+using Movem.Common.Enums;
 using Movem.Common.Interfaces;
 using Movem.Common.Models;
 
@@ -6,32 +6,41 @@ namespace Movem.CacheService;
 
 public class InMemoryStorage : IStorage
 {
-    private readonly Dictionary<int, (DataModel, DateTime, TimeSpan)> _cache = new();
-    public async Task<DataModel?> GetAsync(int id)
+    public int Priority => 10;
+    public StorageType StorageType => StorageType.InMemory;
+    
+    private static readonly Dictionary<int, (DataModel, DateTime, TimeSpan)> Cache = new();
+    public Task<DataModel?> GetModelAsync(int id)
     {
-        var (file, start, expirationTime) = _cache.GetValueOrDefault(id);
+        if (!Cache.TryGetValue(id, out var model))
+        {
+            return Task.FromResult<DataModel?>(null);
+        }
+        
+        var (file, start, expirationTime) = model;
 
         if (DateTime.UtcNow - start > expirationTime)
         {
-            return null;
+            return Task.FromResult<DataModel?>(null);
         }
 
-        return file;
+        return Task.FromResult(file)!;
     }
 
-    public async Task InsertAsync(DataModel model)
+    public async Task<int?> InsertAsync(DataModel model)
     {
-        if (!model.Id.HasValue) return;
-        var m = await GetAsync(model.Id.Value);
-        if (m is not null) return;
-        _cache.Add(model.Id.Value, (model, DateTime.UtcNow, TimeSpan.FromMinutes(10)));
+        if (!model.Id.HasValue) return null;
+        var m = await GetModelAsync(model.Id.Value);
+        if (m is not null) return null;
+        Cache.Add(model.Id.Value, (model, DateTime.UtcNow, TimeSpan.FromMinutes(10)));
+        return model.Id.Value;
     }
 
     public Task UpdateAsync(DataModel model)
     {
         if (!model.Id.HasValue) return Task.CompletedTask;
-        _cache.Remove(model.Id.Value);
-        _cache.Add(model.Id.Value, (model, DateTime.UtcNow, TimeSpan.FromMinutes(10)));
+        Cache.Remove(model.Id.Value);
+        Cache.Add(model.Id.Value, (model, DateTime.UtcNow, TimeSpan.FromMinutes(10)));
         return Task.CompletedTask;
     }
 }

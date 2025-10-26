@@ -1,5 +1,4 @@
 using AutoMapper;
-using Movem.Api.DTOs;
 using Movem.Common.Models;
 using Movem.Db.Models;
 

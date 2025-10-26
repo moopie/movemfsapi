@@ -18,5 +18,7 @@ public class DataProfile : Profile
             .ConvertUsing<DataEntityToDataModel>();
         CreateMap<DataModel, FileResponse>()
             .ConvertUsing<DataModelToFile>();
+        CreateMap<DataModel, DataEntity>()
+            .ConvertUsing<DataModelToDataEntity>();
     }
 }
