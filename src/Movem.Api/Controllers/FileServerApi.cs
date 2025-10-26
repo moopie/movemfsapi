@@ -16,8 +16,10 @@ public class AppController(
     public async Task<IActionResult> Get(int id)
     {
         var item = await storageManager.GetModelAsync(id);
+
+        var file = mapper.Map<FileResponse>(item);
         
-        return item is null ? NotFound() : Ok(item);
+        return item is null ? NotFound() : File(file.Data, file.ContentType, file.FileName);
     }
 
     [HttpPost]
