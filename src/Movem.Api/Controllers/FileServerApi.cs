@@ -17,9 +17,11 @@ public class AppController(
     {
         var item = await storageManager.GetModelAsync(id);
 
+        if (item == null) return NotFound();
+
         var file = mapper.Map<FileResponse>(item);
         
-        return item is null ? NotFound() : File(file.Data, file.ContentType, file.FileName);
+        return File(file.Data, file.ContentType, file.FileName);
     }
 
     [HttpPost]
