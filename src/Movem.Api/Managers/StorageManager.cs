@@ -45,7 +45,7 @@ public class StorageManager(
                 return null;
             }
             
-            model = mapper.Map<DataModel>(item);
+            model = item;
         }
         
         // Go over storages that don't have the data and insert it there.
