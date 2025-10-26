@@ -1,7 +1,6 @@
 using AutoMapper;
 using Movem.Common.Interfaces;
 using Movem.Common.Models;
-using Movem.Db.Models;
 
 namespace Movem.Api.Managers;
 
@@ -78,10 +77,9 @@ public class StorageManager(
             return null;
         }
         
-        var entity = mapper.Map<DataEntity>(model);
-        
         var id = await primaryStorage.InsertAsync(model);
         if (id is null) return null;
+        
         model.Id = id;
         
         foreach (var storage in secondaryStorages)
