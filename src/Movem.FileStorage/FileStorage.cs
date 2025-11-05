@@ -20,7 +20,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         WriteIndented = true
     };
 
-    public async Task<DataModel?> GetModelAsync(int id)
+    public async Task<DataModel?> GetModelAsync(int id, CancellationToken token)
     {
         var file = Directory.GetFiles(_rootPath, $"{id}_*.json").SingleOrDefault();
         if (file is null) return null;
@@ -46,7 +46,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         }
     }
 
-    public async Task<int?> InsertAsync(DataModel file)
+    public async Task<int?> InsertAsync(DataModel file, CancellationToken token)
     {
         if (!Directory.Exists(_rootPath))
         {
@@ -55,7 +55,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         
         if (!file.Id.HasValue) return null;
         
-        var exists = await GetModelAsync(file.Id.Value);
+        var exists = await GetModelAsync(file.Id.Value, token);
         if (exists is not null) return null;
         
         var ts = DateTimeOffset.UtcNow.AddMinutes(30).ToUnixTimeMilliseconds();
@@ -74,7 +74,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
         }
     }
 
-    public async Task UpdateAsync(DataModel model)
+    public async Task UpdateAsync(DataModel model, CancellationToken token)
     {
         var file = Directory.GetFiles(_rootPath, $"{model.Id}_*.json").SingleOrDefault();
         if (file is not null)
@@ -82,7 +82,7 @@ public class FileStorage(ILogger<FileStorage> log) : IStorage
             File.Delete(file);
         }
         
-        await InsertAsync(model);
+        await InsertAsync(model, token);
         
     }
 }

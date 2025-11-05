@@ -10,25 +10,26 @@ namespace Movem.Db.Base
         private readonly DbContext _context = context;
         private readonly DbSet<T> _dbSet = context.Set<T>();
 
-        public async Task<T?> GetAsync(int id)
+        public async Task<T?> GetAsync(int id, CancellationToken token)
         {
-            return await _dbSet.FindAsync(id);
+            return await _dbSet.FindAsync(id, token);
         }
 
-        public async Task AddAsync(T entity)
+        public async Task AddAsync(T entity, CancellationToken token)
         {
-            await _dbSet.AddAsync(entity);
+            await _dbSet.AddAsync(entity, token);
         }
 
-        public async Task UpdateAsync(T entity)
+        public async Task UpdateAsync(T entity, CancellationToken token)
         {
             _dbSet.Update(entity);
+            await SaveChangesAsync(token);
             await Task.CompletedTask;
         }
 
-        public async Task SaveChangesAsync()
+        public async Task SaveChangesAsync(CancellationToken token)
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(token);
         }
     }
 }

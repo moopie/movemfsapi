@@ -10,7 +10,7 @@ public class InMemoryStorage : IStorage
     public StorageType StorageType => StorageType.InMemory;
     
     private static readonly Dictionary<int, (DataModel, DateTime, TimeSpan)> Cache = new();
-    public Task<DataModel?> GetModelAsync(int id)
+    public Task<DataModel?> GetModelAsync(int id, CancellationToken token)
     {
         if (!Cache.TryGetValue(id, out var model))
         {
@@ -27,16 +27,16 @@ public class InMemoryStorage : IStorage
         return Task.FromResult(file)!;
     }
 
-    public async Task<int?> InsertAsync(DataModel model)
+    public async Task<int?> InsertAsync(DataModel model, CancellationToken token)
     {
         if (!model.Id.HasValue) return null;
-        var m = await GetModelAsync(model.Id.Value);
+        var m = await GetModelAsync(model.Id.Value, token);
         if (m is not null) return null;
         Cache.Add(model.Id.Value, (model, DateTime.UtcNow, TimeSpan.FromMinutes(10)));
         return model.Id.Value;
     }
 
-    public Task UpdateAsync(DataModel model)
+    public Task UpdateAsync(DataModel model, CancellationToken token)
     {
         if (!model.Id.HasValue) return Task.CompletedTask;
         Cache.Remove(model.Id.Value);

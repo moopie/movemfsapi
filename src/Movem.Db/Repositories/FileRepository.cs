@@ -12,37 +12,30 @@ public class FileRepository(
     FileStorageContext context,
     IMapper mapper) : Repository<DataEntity>(context), IFileRepository, IStorage
 {
-    public async Task<int?> StoreEntityAndGetIdAsync(DataEntity data)
-    {
-        await AddAsync(data);
-        await base.SaveChangesAsync();
-        return data.Id;
-    }
-
     public int Priority => 0;
     
-    public async Task<DataModel?> GetModelAsync(int id)
+    public async Task<DataModel?> GetModelAsync(int id, CancellationToken token)
     {
-        var entity = await GetAsync(id);
+        var entity = await GetAsync(id, token);
         
         if (entity == null) return null;
         
         return mapper.Map<DataModel>(entity);
     }
 
-    public async Task<int?> InsertAsync(DataModel model)
+    public async Task<int?> InsertAsync(DataModel model, CancellationToken token)
     {
         var entity = mapper.Map<DataEntity>(model);
-        await AddAsync(entity);
-        await base.SaveChangesAsync();
+        await AddAsync(entity, token);
+        await base.SaveChangesAsync(token);
 
         return entity.Id;
     }
 
-    public async Task UpdateAsync(DataModel model)
+    public async Task UpdateAsync(DataModel model, CancellationToken token)
     {
         if (model.Id == null) return;
-        var entity = await GetAsync(model.Id.Value);
+        var entity = await GetAsync(model.Id.Value, token);
         
         if (entity == null) return;
         
@@ -50,6 +43,6 @@ public class FileRepository(
         entity.Content = model.Content;
         entity.ContentType = model.ContentType;
         entity.Length = model.Length;
-        await base.SaveChangesAsync();
+        await base.SaveChangesAsync(token);
     }
 }

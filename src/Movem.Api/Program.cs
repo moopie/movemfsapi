@@ -1,5 +1,4 @@
 using AutoMapper;
-using Movem.Api.Factories;
 using Movem.Api.Managers;
 using Movem.Api.MappingProfiles;
 using Movem.CacheService;
@@ -53,7 +52,6 @@ builder.Services.AddKeyedScoped<IStorage, RedisStorage>("secondary");
 builder.Services.AddScoped<FileStorage>();
 builder.Services.AddScoped<InMemoryStorage>();
 builder.Services.AddScoped<RedisStorage>();
-builder.Services.AddSingleton<IStorageFactory, StorageFactory>();
 builder.Services.AddScoped<IStorageManager, StorageManager>();
 
 var app = builder.Build();

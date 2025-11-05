@@ -18,17 +18,17 @@ public class RedisStorage(ILogger<RedisStorage> log, IDistributedCache cache) : 
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
     
-    public async Task<DataModel?> GetModelAsync(int id)
+    public async Task<DataModel?> GetModelAsync(int id, CancellationToken token)
     {
         var key = id.ToString();
-        var cached = await cache.GetStringAsync(key);
+        var cached = await cache.GetStringAsync(key, token);
         return cached == null ? null : JsonSerializer.Deserialize<DataModel>(cached, _jsonOptions);
     }
 
-    public async Task<int?> InsertAsync(DataModel model)
+    public async Task<int?> InsertAsync(DataModel model, CancellationToken token)
     {
         if (model.Id is null) return null;
-        var exists = await GetModelAsync(model.Id.Value);
+        var exists = await GetModelAsync(model.Id.Value, token);
         if (exists is not null)
         {
             return null;
@@ -40,15 +40,15 @@ public class RedisStorage(ILogger<RedisStorage> log, IDistributedCache cache) : 
             AbsoluteExpirationRelativeToNow = expiration
         };
 
-        await cache.SetStringAsync(model.Id.ToString()!, serialized, options);
+        await cache.SetStringAsync(model.Id.ToString()!, serialized, options, token);
         return model.Id!.Value;
     }
 
-    public async Task UpdateAsync(DataModel model)
+    public async Task UpdateAsync(DataModel model, CancellationToken token)
     {
         if (model.Id is null) return;
         
-        var exists = await GetModelAsync(model.Id.Value);
+        var exists = await GetModelAsync(model.Id.Value, token);
         if (exists is not null)
         {
             await cache.RemoveAsync(exists.Id.ToString()!);
@@ -60,6 +60,6 @@ public class RedisStorage(ILogger<RedisStorage> log, IDistributedCache cache) : 
             AbsoluteExpirationRelativeToNow = expiration
         };
 
-        await cache.SetStringAsync(model.Id.ToString()!, serialized, options);
+        await cache.SetStringAsync(model.Id.ToString()!, serialized, options, token);
     }
 }

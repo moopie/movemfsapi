@@ -12,7 +12,7 @@ public class StorageManager(
     [FromKeyedServices("secondary")]
     IEnumerable<IStorage> secondaryStorages) : IStorageManager
 {
-    public async Task<DataModel?> GetModelAsync(int id)
+    public async Task<DataModel?> GetModelAsync(int id, CancellationToken token)
     {
         var notHit = new List<IStorage>();
 
@@ -24,7 +24,7 @@ public class StorageManager(
                 continue;
             }
             
-            var item = await storage.GetModelAsync(id);
+            var item = await storage.GetModelAsync(id, token);
 
             if (item != null)
             {
@@ -39,7 +39,7 @@ public class StorageManager(
         // No data was found anywhere, get it from the db
         if (model is null)
         {
-            var item = await primaryStorage.GetModelAsync(id);
+            var item = await primaryStorage.GetModelAsync(id, token);
             if (item is null)
             {
                 return null;
@@ -55,7 +55,7 @@ public class StorageManager(
             {
                 try
                 {
-                    await storage.InsertAsync(model);
+                    await storage.InsertAsync(model, token);
                 }
                 catch (Exception e)
                 {
@@ -70,14 +70,14 @@ public class StorageManager(
         return model;
     }
 
-    public async Task<int?> InsertModelAsync(DataModel model)
+    public async Task<int?> InsertModelAsync(DataModel model, CancellationToken token)
     {
         if (model.Id is not null)
         {
             return null;
         }
         
-        var id = await primaryStorage.InsertAsync(model);
+        var id = await primaryStorage.InsertAsync(model, token);
         if (id is null) return null;
         
         model.Id = id;
@@ -86,11 +86,11 @@ public class StorageManager(
         {
             try
             {
-                await storage.InsertAsync(model);
+                await storage.InsertAsync(model, token);
             }
             catch (Exception e)
             {
-                log.LogError(e.Message);
+                log.LogError(e, e.Message);
                 // See line 65
                 //throw;
             }
@@ -99,21 +99,21 @@ public class StorageManager(
         return id;
     }
 
-    public async Task<bool> UpdateModelAsync(int id, DataModel model)
+    public async Task<bool> UpdateModelAsync(int id, DataModel model, CancellationToken token)
     {
         model.Id = id;
         
-        await primaryStorage.UpdateAsync(model);
+        await primaryStorage.UpdateAsync(model, token);
 
         foreach (var storage in secondaryStorages)
         {
             try
             {
-                await storage.UpdateAsync(model);
+                await storage.UpdateAsync(model, token);
             }
             catch (Exception e)
             {
-                log.LogError(e.Message);
+                log.LogError(e, e.Message);
                 // See line 65
                 //throw;
             }

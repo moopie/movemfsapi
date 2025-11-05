@@ -2,9 +2,9 @@ namespace Movem.Db.Interfaces
 {
     public interface IRepository<T> where T : class
     {
-        Task<T?> GetAsync(int id);
-        Task AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task SaveChangesAsync();
+        Task<T?> GetAsync(int id, CancellationToken cancellationToken);
+        Task AddAsync(T entity,  CancellationToken cancellationToken);
+        Task UpdateAsync(T entity,  CancellationToken cancellationToken);
+        Task SaveChangesAsync(CancellationToken cancellationToken);
     }
 }
